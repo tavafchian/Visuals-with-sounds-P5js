@@ -1,0 +1,44 @@
+let mic;
+var deg = 2;
+
+var temX = 300;
+var temY = 200;
+let i = 40;
+
+function setup() {
+    createCanvas(600, 600);
+    // Create an Audio input
+    mic = new p5.AudioIn();
+    mic.start();
+
+}
+
+function mouseClicked(){
+    if (getAudioContext().state !== 'running') {
+        getAudioContext().resume();
+    }
+}
+
+function draw() {
+    let vol = mic.getLevel();
+     //background(220);
+    // var pos = 300
+    // let h = map(vol, 0, 1, height, 0);
+    console.log(vol);
+    noStroke();
+    if (vol > 0.01) {
+        // if (vol>0.2){
+        //     fill(138,18,230)
+        // }
+        // else{
+        //     fill(255,255,20)
+        // }
+        fill(vol*i*3,vol*i*2,vol*i*4)
+        circle(temX, temY, vol*200);
+        temX = temX-sin(deg)*150;
+        temY = temY-cos(deg)*150;
+        i = i+10;
+        deg = deg+3;
+    }
+
+}
