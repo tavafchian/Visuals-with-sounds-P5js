@@ -1,0 +1,88 @@
+let i = 0;
+let t = 0; // control i to raise or decrease
+class cir {
+    constructor(x, y, rmain,col,rbig) {
+        this.position = new p5.Vector(x, y);
+        this.fixedPos = new p5.Vector(x, y);
+        this.rmain = rmain;
+        this.rbig = rbig;
+        this.angle = 0;
+        this.speed = 0;
+        this.col = 0;
+    }
+
+    update(v,r,h,R) {
+        this.speed = v;
+        this.rmain = r;
+        this.angle = this.angle + this.speed;
+        this.col = h;
+        this.rbig = R;
+    }
+
+    pos(){
+        this.position.x = this.fixedPos.x + this.rbig * cos(this.angle);
+        this.position.y = this.fixedPos.y + this.rbig * sin(this.angle);
+    }
+
+
+    display() {
+        noStroke();
+        colorMode(HSB, 100);
+        fill(this.col,i,100);
+        if(i<100 && t==0) i = i + 1;
+        if (i == 100 && t ==0) t=1;
+        if(i>0 && t==1) i = i - 1;
+        if(i == 0 && t==1) t=0;
+        circle(this.position.x, this.position.y, this.rmain);
+    }
+}
+
+
+let r = 10;
+let R = 150;
+let col = 0;
+let mic , fft;
+function setup() {
+    angleMode(DEGREES);
+    createCanvas(1200, 600);
+
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT();
+    fft.setInput(mic);
+
+    text("Click to start", 400,30);
+
+    // slider for the Rbig
+    text("Big circle ratio", 20,15)
+    slider_R = createSlider(10, 200, 150, 1);
+    slider_R.position(105, 10);
+    slider_R.style('width', '100px');
+}
+
+function mouseClicked(){
+    if (getAudioContext().state !== 'running') {
+        getAudioContext().resume();
+    }
+}
+
+let cmain = new cir(300,250,r,col,R);
+let c2 = new cir(800,250,r,col,R);
+function draw() {
+    let vol = mic.getLevel();
+    vol = map(vol*10,0,0.99,1,10);
+    vol = round(vol);
+
+    let spectrum = fft.analyze();
+    hue = map(spectrum[0]*2, 0, 255, 1, 100);
+
+    let RB = slider_R.value();
+    let rS = vol*20;
+    cmain.update(vol,rS,hue,RB);
+    cmain.pos();
+    cmain.display();
+
+    c2.update(vol,rS,hue,RB);
+    c2.pos();
+    c2.display();
+}
